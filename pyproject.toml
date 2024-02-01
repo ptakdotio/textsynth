@@ -1,0 +1,30 @@
+[project]
+name    = "textsynth"
+version = "0.1"
+authors = [
+  { name="Christopher Ptak", email="christopher@ptak.io" },
+]
+
+readme = "README.md"
+
+description = "Easy-to-use Python wrapper for the TextSynth API"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: The Unlicense (Unlicense)",
+    "Operating System :: OS Independent",
+    "Development Status :: 3 - Alpha"
+]
+
+dependencies = [
+    "requests>=2.28",
+    "jsonschema>=4.21"
+]
+
+[project.urls]
+Homepage = "https://github.com/ptakdotio/textsynth"
+Issues   = "https://github.com/ptakdotio/textsynth/issues"
+
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
