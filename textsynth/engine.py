@@ -15,8 +15,89 @@ class Engine:
     def _post(self, path, payload):
         return self.client._post(f'engines/{self.engine_id}/{path}', payload)
 
+    def _post_streaming(self, path, payload):
+        return self.client._post_streaming(f'engines/{self.engine_id}/{path}', payload)
+
     def _post_files(self, path, files):
         return self.client._post_files(f'engines/{self.engine_id}/{path}', files)
+
+    COMPLETIONS_CHAT_COMMON_PROPERTIES = {
+        'max_tokens': {
+            'type': 'integer',
+            'minimum': 0
+        },
+        'stream': {
+            'type': 'boolean'
+        },
+        'stop': {
+            'oneOf': [
+                {
+                    'type': 'string'
+                },
+                {
+                    'type': 'array',
+                    'items': {
+                        'type': 'string'
+                    }
+                }
+            ]
+        },
+        'n': {
+            'type': 'integer',
+            'minimum': 1,
+            'maximum': 16
+        },
+        'temperature': {
+            'type': 'number'
+        },
+        'top_k': {
+            'type': 'integer',
+            'minimum': 1,
+            'maximum': 1000
+        },
+        'top_p': {
+            'type': 'number',
+            'minimum': 0,
+            'maximum': 1
+        },
+        'seed': {
+            'type': 'integer'
+        },
+        'logit_bias': {
+            'type': 'object',
+            'additionalProperties': False,
+            'patternProperties': {
+                '^.*$': {
+                    'type': 'number'
+                }
+            }
+        },
+        'presence_penalty': {
+            'type': 'number',
+            'minimum': -2,
+            'maximum': 2
+        },
+        'frequency_penalty': {
+            'type': 'number',
+            'minimum': -2,
+            'maximum': 2
+        },
+        'repetition_penalty': {
+            'type': 'number'
+        },
+        'typical_p': {
+            'type': 'number',
+            'minimum': 0,
+            'maximum': 1
+        }
+        # TODO figure out how to validate these
+        # 'grammar': {
+        #     'type': 'string'
+        # },
+        # 'schema': {
+        #     'type': 'object'
+        # }
+    }
 
     COMPLETIONS_SCHEMA = {
         'required': ['prompt'],
@@ -25,81 +106,17 @@ class Engine:
             'prompt': {
                 'type': 'string'
             },
-            'max_tokens': {
-                'type': 'integer',
-                'minimum': 0
-            },
-            # NOTE Property 'stream' not implemented yet
-            'stop': {
-                'oneOf': [
-                    {
-                        'type': 'string'
-                    },
-                    {
-                        'type': 'array',
-                        'items': {
-                            'type': 'string'
-                        }
-                    }
-                ]
-            },
-            'n': {
-                'type': 'integer',
-                'minimum': 1,
-                'maximum': 16
-            },
-            'temperature': {
-                'type': 'number'
-            },
-            'top_k': {
-                'type': 'integer',
-                'minimum': 1,
-                'maximum': 1000
-            },
-            'top_p': {
-                'type': 'number',
-                'minimum': 0,
-                'maximum': 1
-            },
-            'seed': {
-                'type': 'integer'
-            },
-            'logit_bias': {
-                'type': 'object',
-                'additionalProperties': False,
-                'patternProperties': {
-                    '^.*$': {
-                        'type': 'number'
-                    }
-                }
-            },
-            'presence_penalty': {
-                'type': 'number',
-                'minimum': -2,
-                'maximum': 2
-            },
-            'frequency_penalty': {
-                'type': 'number',
-                'minimum': -2,
-                'maximum': 2
-            },
-            'repetition_penalty': {
-                'type': 'number'
-            },
-            'typical_p': {
-                'type': 'number',
-                'minimum': 0,
-                'maximum': 1
-            }
-            # NOTE Property 'grammar' not implemented yet
-            # NOTE Property 'schema' not implemented yet
+            **COMPLETIONS_CHAT_COMMON_PROPERTIES
         }
     }
 
     def completions(self, prompt, **kwargs):
         payload = {'prompt': prompt, **kwargs}
         jsonschema.validate(payload, self.COMPLETIONS_SCHEMA)
-        return Completions(self._post('completions', payload))
+        if payload.get('stream'):
+            return map(Completions, self._post_streaming('completions', payload))
+        else:
+            return Completions(self._post('completions', payload))
 
     CHAT_SCHEMA = {
         'required': ['messages'],
@@ -114,81 +131,17 @@ class Engine:
             'system': {
                 'type': 'string'
             },
-            'max_tokens': {
-                'type': 'integer',
-                'minimum': 0
-            },
-            # NOTE Property 'stream' not implemented yet
-            'stop': {
-                'oneOf': [
-                    {
-                        'type': 'string'
-                    },
-                    {
-                        'type': 'array',
-                        'items': {
-                            'type': 'string'
-                        }
-                    }
-                ]
-            },
-            'n': {
-                'type': 'integer',
-                'minimum': 1,
-                'maximum': 16
-            },
-            'temperature': {
-                'type': 'number'
-            },
-            'top_k': {
-                'type': 'integer',
-                'minimum': 1,
-                'maximum': 1000
-            },
-            'top_p': {
-                'type': 'number',
-                'minimum': 0,
-                'maximum': 1
-            },
-            'seed': {
-                'type': 'integer'
-            },
-            'logit_bias': {
-                'type': 'object',
-                'additionalProperties': False,
-                'patternProperties': {
-                    '^.*$': {
-                        'type': 'number'
-                    }
-                }
-            },
-            'presence_penalty': {
-                'type': 'number',
-                'minimum': -2,
-                'maximum': 2
-            },
-            'frequency_penalty': {
-                'type': 'number',
-                'minimum': -2,
-                'maximum': 2
-            },
-            'repetition_penalty': {
-                'type': 'number'
-            },
-            'typical_p': {
-                'type': 'number',
-                'minimum': 0,
-                'maximum': 1
-            }
-            # NOTE Property 'grammar' not implemented yet
-            # NOTE Property 'schema' not implemented yet
+            **COMPLETIONS_CHAT_COMMON_PROPERTIES
         }
     }
 
     def chat(self, messages, **kwargs):
         payload = {'messages': messages, **kwargs}
         jsonschema.validate(payload, self.CHAT_SCHEMA)
-        return Chat(self._post('chat', payload))
+        if payload.get('stream'):
+            return map(Chat, self._post_streaming('chat', payload))
+        else:
+            return Chat(self._post('chat', payload))
 
     TRANSLATE_LANGUAGE_CODES = {
         'enum': [
