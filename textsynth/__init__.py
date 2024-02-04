@@ -1,4 +1,5 @@
 from textsynth.client import TextSynth
+from textsynth.engine import Engine
 
 _default_client = TextSynth()
 
