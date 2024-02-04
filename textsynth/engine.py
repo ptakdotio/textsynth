@@ -7,8 +7,26 @@ import jsonschema
 
 
 class Engine:
+    """
+    This class is an interface for making requests to a specific engine through
+    the TextSynth API. Each request will be validated according to the JSON schema
+    that the endpoint expects, and the response will be wrapped in an object that
+    performs useful post-processing on the results, handling base64 decoding and
+    similar tasks.
+    """
 
     def __init__(self, client, engine_id):
+        """
+        Initialize an `Engine` to make requests through the given `client`
+        using `engine_id` in the requests.
+
+        Note that not all engines support all endpoints. This library does not
+        keep track of the available engines and endpoints they support, as they
+        are liable to change at any time. If you request an unsupported
+        endpoint, it will be rejected by the server with an appropriate error
+        message.
+        """
+
         self.client = client
         self.engine_id = engine_id
 
@@ -111,6 +129,13 @@ class Engine:
     }
 
     def completions(self, prompt, **kwargs):
+        """
+        Request a text completion of the given `prompt`.
+
+        See <https://textsynth.com/documentation.html#completions> for
+        documentation on this endpoint.
+        """
+
         payload = {'prompt': prompt, **kwargs}
         jsonschema.validate(payload, self.COMPLETIONS_SCHEMA)
         if payload.get('stream'):
@@ -136,6 +161,13 @@ class Engine:
     }
 
     def chat(self, messages, **kwargs):
+        """
+        Request a text completion for the chat conversation given in `messages`.
+
+        See <https://textsynth.com/documentation.html#chat> for documentation
+        on this endpoint.
+        """
+
         payload = {'messages': messages, **kwargs}
         jsonschema.validate(payload, self.CHAT_SCHEMA)
         if payload.get('stream'):
@@ -212,6 +244,13 @@ class Engine:
     }
  
     def translate(self, texts, **kwargs):
+        """
+        Translate one or more texts into a target language.
+
+        See <https://textsynth.com/documentation.html#translations> for
+        documentation on this endpoint.
+        """
+
         payload = {'texts': texts, **kwargs}
         jsonschema.validate(payload, self.TRANSLATE_SCHEMA)
         return Translate(self._post('translate', payload))
@@ -231,6 +270,13 @@ class Engine:
     }
 
     def logprob(self, context, continuation):
+        """
+        Estimate the probability that `continuation` will be generated after
+        `context`.
+
+        See <https://textsynth.com/documentation.html#logprob> for
+        documentation on this endpoint.
+        """
         payload = {'context': context, 'continuation': continuation}
         jsonschema.validate(payload, self.LOGPROB_SCHEMA)
         return Chat(self._post('logprob', payload))
@@ -250,6 +296,12 @@ class Engine:
     }
 
     def tokenize(self, text, **kwargs):
+        """
+        Get the tokens corresponding to a given text.
+
+        See <https://textsynth.com/documentation.html#tokenize> for
+        documentation on this endpoint.
+        """
         payload = {'text': text, **kwargs}
         jsonschema.validate(payload, self.TOKENIZE_SCHEMA)
         return TokenizeAnswer(**self._post('tokenize', payload))
@@ -298,6 +350,13 @@ class Engine:
     }
 
     def text_to_image(self, prompt, **kwargs):
+        """
+        Generate one or more images from a text description.
+
+        See <https://textsynth.com/documentation.html#text_to_image> for
+        documentation on this endpoint.
+        """
+
         payload = {'prompt': prompt, **kwargs}
         jsonschema.validate(payload, self.TEXT_TO_IMAGE_SCHEMA)
         return TextToImage(self._post('text_to_image', payload))
@@ -326,6 +385,15 @@ class Engine:
     }
 
     def transcript(self, audio_file, **kwargs):
+        """
+        Transcribe an audio file into a text with timestamps. The parameter
+        `audio_file` must be a file-like object containing an audio track in
+        either MP3, M4A, MP4, WAV, or Opus format.
+
+        See <https://textsynth.com/documentation.html#transcript> for
+        documentation on this endpoint. 
+        """
+
         payload = {**kwargs}
         jsonschema.validate(payload, self.TRANSCRIPT_SCHEMA)
         payload_file = io.StringIO(json.dumps(payload))
@@ -333,15 +401,28 @@ class Engine:
 
 
 class Answer:
+    """
+    This is the base class for all answer-wrapping objects.
+
+    This class will keep the original JSON response, independent of any
+    post-processing, in case the API response changes or the user needs the
+    exact response from the server.
+    """
 
     def __init__(self, raw_json):
         self._raw_json = raw_json
 
     def raw_json(self):
+        """
+        Return the original JSON from which this object was constructed.
+        """
         return self._raw_json
 
 
 class Completions(Answer):
+    """
+    Wrap a response from the `completions` endpoint.
+    """
 
     def __init__(self, raw_json):
         super().__init__(raw_json)
@@ -358,6 +439,13 @@ class Completions(Answer):
 
 
 class Chat(Answer):
+    """
+    Wrap a response from the `chat` endpoint.
+
+    Note that this is the same as the `completions` response; however, the
+    reponse schema may diverge in the future, so these classes are kept
+    separate.
+    """
 
     def __init__(self, raw_json):
         super().__init__(raw_json)
@@ -374,6 +462,11 @@ class Chat(Answer):
 
 
 class Translate(Answer):
+    """
+    Wrap a response from the `translate` endpoint. Typically, multiple
+    translations will be generated, each of which will be wrapped in a
+    `TranslateText` object.
+    """
 
     def __init__(self, raw_json):
         super().__init__(raw_json)
@@ -390,6 +483,9 @@ class Translate(Answer):
 
 
 class TranslateText(Answer):
+    """
+    Wrap a single translation from the `translate` endpoint.
+    """
 
     def __init__(self, raw_json):
         super().__init__(raw_json)
@@ -402,6 +498,9 @@ class TranslateText(Answer):
 
 
 class Logprob(Answer):
+    """
+    Wrap a response from the `logprob` endpoint.
+    """
 
     def __init__(self, raw_json):
         super().__init__(raw_json)
@@ -416,6 +515,14 @@ class Logprob(Answer):
 
 
 class Tokenize(Answer):
+    """
+    Wrap a response from the `tokenize` endpoint.
+
+    If provided, the base64-encoded token contents will be decoded. As the
+    TextSynth documentation notes, some tokens to not correspond to a complete
+    and valid UTF-8 sequence, so they are decoded into `bytes` rather than
+    `str`.
+    """
 
     def __init__(self, raw_json):
         super().__init__(raw_json)
@@ -435,6 +542,12 @@ class Tokenize(Answer):
 
 
 class TextToImage(Answer):
+    """
+    Wrap a response from the `text_to_image` endpoint.
+
+    Each base64-encoded image will be decoded into a `bytes` object. This can
+    be saved directly to a `.jpg` file.
+    """
 
     def __init__(self, raw_json):
         super().__init__(raw_json)
@@ -449,6 +562,10 @@ class TextToImage(Answer):
 
 
 class Transcript(Answer):
+    """
+    Wrap a response from the `transcript endpoint`. Each timestamped segment
+    will be wrapped in a `TranscriptSegment` object.
+    """
 
     def __init__(self, raw_json):
         super().__init__(raw_json)
@@ -470,6 +587,9 @@ class Transcript(Answer):
 
 
 class TranscriptSegment(Answer):
+    """
+    Wrap a timestamped segment from the `transcript` endpoint.
+    """
 
     def __init__(self, raw_json):
         super().__init__(raw_json)
