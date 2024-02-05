@@ -14,19 +14,20 @@ class TextSynth:
     """
     This class represents a connection to a TextSynth server. It handles
     authentication and provides access to the server's REST API.
+
+    If no server is provided, api.textsynth.com will be used by default.
+
+    The API key can also be provided in the environment variable
+    ``TEXTSYNTH_SECRET_KEY``. If no API key provided, the requests will
+    not be authenticated.
+
+    .. note::
+        The default server will always
+        reject unauthenticated requests, so it only makes sense to do this
+        with local servers.
     """
 
     def __init__(self, server=None, secret_key=None):
-        """
-        Prepare a connection to a given server with a given API key. If no server is
-        provided, <api.textsynth.com> will be used by default. The API key can also be
-        provided in the environment variable `TEXTSYNTH_SECRET_KEY`.
-
-        If no API key provided, the requests will not be authenticated. Note that the
-        default server will always reject unauthenticated requests, so it only makes
-        sense to do this with local servers.
-        """
-
         if server is not None:
             self.server = server
         else:
@@ -71,9 +72,8 @@ class TextSynth:
 
     def engines(self, engine_id):
         """
-        Prepare an `Engine` with the given `engine_id`, which can then be used
-        to make requests. This is the preferred way of creating an `Engine`
-        object.
+        Prepare an ``Engine`` which can be used to make requests. This is the
+        preferred way of creating an ``Engine`` object.
         """
         return textsynth.engine.Engine(self, engine_id)
 
@@ -81,5 +81,5 @@ class TextSynth:
         """
         Get the number of remaining credits on your account.
         """
-        return self._get('credits')['credits']
+        return self._catch_error(self._get('credits'))['credits']
 
