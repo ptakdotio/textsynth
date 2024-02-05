@@ -14,20 +14,26 @@ class TextSynth:
     """
     This class represents a connection to a TextSynth server. It handles
     authentication and provides access to the server's REST API.
-
-    If no server is provided, api.textsynth.com will be used by default.
-
-    The API key can also be provided in the environment variable
-    ``TEXTSYNTH_SECRET_KEY``. If no API key provided, the requests will
-    not be authenticated.
-
-    .. note::
-        The default server will always
-        reject unauthenticated requests, so it only makes sense to do this
-        with local servers.
     """
 
     def __init__(self, server=None, secret_key=None):
+        """
+        Create a client object that will make authenticated requests to a
+        server.
+
+        If no server is provided, api.textsynth.com will be used by default.
+
+        The API key can also be provided in the environment variable
+        ``TEXTSYNTH_SECRET_KEY``. If no API key provided, the requests will
+        not be authenticated.
+
+        .. note::
+            The default server will always reject unauthenticated requests, so
+            it only makes sense to do this with local servers.
+
+        :param server: Address of the TextSynth server
+        :param secret_key: Your TextSynth API key
+        """
         if server is not None:
             self.server = server
         else:
@@ -72,8 +78,11 @@ class TextSynth:
 
     def engines(self, engine_id):
         """
-        Prepare an ``Engine`` which can be used to make requests. This is the
-        preferred way of creating an ``Engine`` object.
+        Prepare an ``Engine`` which can be used to make requests through the
+        current client. This is the preferred way of creating an ``Engine``
+        object.
+
+        :param engine_id: The engine id with which to make requests
         """
         return textsynth.engine.Engine(self, engine_id)
 

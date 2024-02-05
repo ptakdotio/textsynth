@@ -22,6 +22,14 @@ class Engine:
     """
 
     def __init__(self, client, engine_id):
+        """
+        Create an ``Engine`` object that will make requests to an engine
+        using a client.
+
+        :param client: The ``Client`` object through which to make requests
+        :param engine_id: The id of the engine you want to use
+        """
+
         self.client = client
         self.engine_id = engine_id
 
@@ -130,6 +138,8 @@ class Engine:
 
         See https://textsynth.com/documentation.html#completions for
         documentation on this endpoint.
+
+        :param prompt: The text to be completed by the model
         """
 
         payload = {'prompt': prompt, **kwargs}
@@ -162,6 +172,9 @@ class Engine:
 
         See https://textsynth.com/documentation.html#chat for documentation
         on this endpoint.
+
+        :param messages: The messages in the chat conversation so far
+        :param system: The system chat prompt
         """
 
         payload = {'messages': messages, **kwargs}
@@ -220,7 +233,7 @@ class Engine:
         'required': ['text', 'source_lang', 'target_lang'],
         'additionalProperties': False,
         'properties': {
-            'text': {
+            'texts': {
                 'type': 'array',
                 'items': {
                     'type': 'string'
@@ -245,6 +258,8 @@ class Engine:
 
         See https://textsynth.com/documentation.html#translations for
         documentation on this endpoint.
+
+        :param texts: List of texts to be translated
         """
 
         payload = {'texts': texts, **kwargs}
@@ -272,6 +287,9 @@ class Engine:
 
         See https://textsynth.com/documentation.html#logprob for
         documentation on this endpoint.
+
+        :param context: Context for evaluating a completion
+        :param continuation: The completion being evaluated
         """
         payload = {'context': context, 'continuation': continuation}
         jsonschema.validate(payload, self.LOGPROB_SCHEMA)
@@ -297,6 +315,8 @@ class Engine:
 
         See https://textsynth.com/documentation.html#tokenize for
         documentation on this endpoint.
+
+        :param text: Text to convert into tokens
         """
         payload = {'text': text, **kwargs}
         jsonschema.validate(payload, self.TOKENIZE_SCHEMA)
@@ -351,6 +371,8 @@ class Engine:
 
         See https://textsynth.com/documentation.html#text_to_image for
         documentation on this endpoint.
+
+        :param prompt: Text description for image generation
         """
 
         payload = {'prompt': prompt, **kwargs}
@@ -387,7 +409,9 @@ class Engine:
         either MP3, M4A, MP4, WAV, or Opus format.
 
         See https://textsynth.com/documentation.html#transcript for
-        documentation on this endpoint. 
+        documentation on this endpoint.
+
+        :param audio_file: A file-like object containing audio to transcribe
         """
 
         payload = {**kwargs}
