@@ -28,6 +28,9 @@ Then, in a Python session:
 Completions(text=' there was a company called Tinkoff. It didn’t do much that day.\n')
 ```
 
+For more information about how to use this library, check out
+[the documentation](https://textsynth-python.readthedocs.io/en/latest/).
+
 ## Is this library production-ready?
 
 Not yet! I have yet to create a comprehensive test suite, so far I have only
