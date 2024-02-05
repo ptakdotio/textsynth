@@ -52,3 +52,11 @@ object.
 ...
 ```
 
+## Is this production-ready?
+
+Not yet! I have yet to create a comprehensive test suite, so far I have only
+been manually testing everything on my own credits. I plan to add automated
+tests that work with the free version of
+[`ts_server`](https://bellard.org/ts_server/), so that anyone can run them
+locally without incurring charges.
+
