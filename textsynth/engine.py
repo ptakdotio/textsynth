@@ -117,12 +117,12 @@ class Engine:
             'maximum': 1
         }
         # TODO figure out how to validate these
-        # 'grammar': {
-        #     'type': 'string'
-        # },
-        # 'schema': {
-        #     'type': 'object'
-        # }
+        'grammar': {
+            'type': 'string'
+        },
+        'schema': {
+            'type': 'object'
+        }
     }
 
     COMPLETIONS_SCHEMA = {
