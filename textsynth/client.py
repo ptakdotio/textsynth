@@ -16,7 +16,7 @@ class TextSynth:
     authentication and provides access to the server's REST API.
     """
 
-    def __init__(self, server=None, secret_key=None):
+    def __init__(self, server: str = None, secret_key: str = None):
         """
         Create a client object that will make authenticated requests to a
         server.
@@ -76,7 +76,7 @@ class TextSynth:
             raise TextSynthError(decoded['error'])
         return decoded
 
-    def engines(self, engine_id):
+    def engines(self, engine_id: str) -> textsynth.engine.Engine:
         """
         Prepare an ``Engine`` which can be used to make requests through the
         current client. This is the preferred way of creating an ``Engine``
@@ -86,7 +86,7 @@ class TextSynth:
         """
         return textsynth.engine.Engine(self, engine_id)
 
-    def credits(self):
+    def credits(self) -> int:
         """
         Get the number of remaining credits on your account.
         """

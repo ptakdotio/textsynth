@@ -33,12 +33,38 @@ Answers
 -------
 
 .. autoclass:: Completions
+   :undoc-members:
+   :members:
+
 .. autoclass:: Chat
+   :undoc-members:
+   :members:
+
 .. autoclass:: Translate
+   :undoc-members:
+   :members:
+
 .. autoclass:: TranslateText
+   :undoc-members:
+   :members:
+
 .. autoclass:: Logprob
+   :undoc-members:
+   :members:
+
 .. autoclass:: Tokenize
+   :undoc-members:
+   :members:
+
 .. autoclass:: TextToImage
+   :undoc-members:
+   :members:
+
 .. autoclass:: Transcript
+   :undoc-members:
+   :members:
+
 .. autoclass:: TranscriptSegment
+   :undoc-members:
+   :members:
 

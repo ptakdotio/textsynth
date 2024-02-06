@@ -2,6 +2,8 @@ import base64
 import io
 import json
 
+from typing import List, BinaryIO
+
 import jsonschema
 
 
@@ -14,6 +16,9 @@ class Engine:
     performs useful post-processing on the results, handling base64 decoding and
     similar tasks.
 
+    It is generally preferred to create an engine using the method
+    :py:meth:`textsynth.client.TextSynth.engines`.
+
     .. note::
         Not all engines support all endpoints. This library does not keep track
         of the available engines and endpoints they support, as they are liable
@@ -21,12 +26,11 @@ class Engine:
         be rejected by the server with an appropriate error message.
     """
 
-    def __init__(self, client, engine_id):
+    def __init__(self, client: 'textsynth.client.TextSynth', engine_id: str):
         """
-        Create an ``Engine`` object that will make requests to an engine
-        using a client.
+        Create an object that will make requests to an engine using a client.
 
-        :param client: The ``Client`` object through which to make requests
+        :param client: The client object through which to make requests
         :param engine_id: The id of the engine you want to use
         """
 
@@ -132,14 +136,15 @@ class Engine:
         }
     }
 
-    def completions(self, prompt, **kwargs):
+    def completions(self, prompt: str, **kwargs) -> 'Completions':
         """
         Request a text completion of the given ``prompt``.
 
-        See https://textsynth.com/documentation.html#completions for
-        documentation on this endpoint.
-
         :param prompt: The text to be completed by the model
+        :param kwargs: Keyword arguments accepted by this endpoint
+
+        See https://textsynth.com/documentation.html#completions for
+        detailed documentation on this endpoint.
         """
 
         payload = {'prompt': prompt, **kwargs}
@@ -166,15 +171,16 @@ class Engine:
         }
     }
 
-    def chat(self, messages, **kwargs):
+    def chat(self, messages: List[str], **kwargs) -> 'Chat':
         """
         Request a text completion for the chat conversation given in ``messages``.
 
-        See https://textsynth.com/documentation.html#chat for documentation
-        on this endpoint.
-
         :param messages: The messages in the chat conversation so far
         :param system: The system chat prompt
+        :param kwargs: Keyword arguments accepted by this endpoint
+
+        See https://textsynth.com/documentation.html#chat for detailed
+        documentation on this endpoint.
         """
 
         payload = {'messages': messages, **kwargs}
@@ -252,14 +258,15 @@ class Engine:
         }
     }
  
-    def translate(self, texts, **kwargs):
+    def translate(self, texts: List[str], **kwargs) -> 'Translate':
         """
         Translate one or more texts into a target language.
 
-        See https://textsynth.com/documentation.html#translations for
-        documentation on this endpoint.
-
         :param texts: List of texts to be translated
+        :param kwargs: Keyword arguments accepted by this endpoint
+
+        See https://textsynth.com/documentation.html#translations for
+        detailed documentation on this endpoint.
         """
 
         payload = {'texts': texts, **kwargs}
@@ -280,16 +287,16 @@ class Engine:
         }
     }
 
-    def logprob(self, context, continuation):
+    def logprob(self, context: str, continuation: str) -> 'Logprob':
         """
         Estimate the probability that ``continuation`` will be generated after
         ``context``.
 
-        See https://textsynth.com/documentation.html#logprob for
-        documentation on this endpoint.
-
         :param context: Context for evaluating a completion
         :param continuation: The completion being evaluated
+
+        See https://textsynth.com/documentation.html#logprob for
+        detailed documentation on this endpoint.
         """
         payload = {'context': context, 'continuation': continuation}
         jsonschema.validate(payload, self.LOGPROB_SCHEMA)
@@ -309,14 +316,15 @@ class Engine:
         }
     }
 
-    def tokenize(self, text, **kwargs):
+    def tokenize(self, text: str, **kwargs) -> 'Tokenize':
         """
         Get the tokens corresponding to a given text.
 
-        See https://textsynth.com/documentation.html#tokenize for
-        documentation on this endpoint.
-
         :param text: Text to convert into tokens
+        :param kwargs: Keyword arguments accepted by this endpoint
+
+        See https://textsynth.com/documentation.html#tokenize for
+        detailed documentation on this endpoint.
         """
         payload = {'text': text, **kwargs}
         jsonschema.validate(payload, self.TOKENIZE_SCHEMA)
@@ -365,14 +373,15 @@ class Engine:
         }
     }
 
-    def text_to_image(self, prompt, **kwargs):
+    def text_to_image(self, prompt: str, **kwargs) -> 'TextToImage':
         """
         Generate one or more images from a text description.
 
-        See https://textsynth.com/documentation.html#text_to_image for
-        documentation on this endpoint.
-
         :param prompt: Text description for image generation
+        :param kwargs: Keyword arguments accepted by this endpoint
+
+        See https://textsynth.com/documentation.html#text_to_image for
+        detailed documentation on this endpoint.
         """
 
         payload = {'prompt': prompt, **kwargs}
@@ -402,16 +411,17 @@ class Engine:
         }
     }
 
-    def transcript(self, audio_file, **kwargs):
+    def transcript(self, audio_file: BinaryIO, **kwargs) -> 'Transcript':
         """
         Transcribe an audio file into a text with timestamps. The parameter
         ``audio_file`` must be a file-like object containing an audio track in
         either MP3, M4A, MP4, WAV, or Opus format.
 
-        See https://textsynth.com/documentation.html#transcript for
-        documentation on this endpoint.
-
         :param audio_file: A file-like object containing audio to transcribe
+        :param kwargs: Keyword arguments accepted by this endpoint
+
+        See https://textsynth.com/documentation.html#transcript for
+        detailed documentation on this endpoint.
         """
 
         payload = {**kwargs}
@@ -429,10 +439,10 @@ class Answer:
     exact response from the server.
     """
 
-    def __init__(self, raw_json):
+    def __init__(self, raw_json: dict):
         self._raw_json = raw_json
 
-    def raw_json(self):
+    def raw_json(self) -> dict:
         """
         Return the original JSON from which this object was constructed.
         """
@@ -443,6 +453,24 @@ class Completions(Answer):
     """
     Wrap a response from the ``completions`` endpoint.
     """
+
+    text: str
+    """Text completion"""
+
+    reached_end: bool
+    """Whether this is the last streamed response"""
+
+    truncated_prompt: bool
+    """Whether the prompt was cut off by the context length"""
+
+    finish_reason: str
+    """String describing why the completion ended"""
+
+    input_tokens: int
+    """Number of tokens in prompt"""
+
+    output_tokens: int
+    """Number of tokens in response"""
 
     def __init__(self, raw_json):
         super().__init__(raw_json)
@@ -462,10 +490,29 @@ class Chat(Answer):
     """
     Wrap a response from the ``chat`` endpoint.
 
-    Note that this is the same as the ``completions`` response; however, the
-    reponse schema may diverge in the future, so these classes are kept
-    separate.
+    .. note::
+        This is the same as the :py:class:`completions` response; however, the
+        reponse schema may diverge in the future, so these classes are kept
+        separate.
     """
+
+    text: str
+    """Text completion"""
+
+    reached_end: bool
+    """Whether this is the last streamed response"""
+
+    truncated_prompt: bool
+    """Whether the prompt was cut off by the context length"""
+
+    finish_reason: str
+    """String describing why the completion ended"""
+
+    input_tokens: int
+    """Number of tokens in prompt"""
+
+    output_tokens: int
+    """Number of tokens in response"""
 
     def __init__(self, raw_json):
         super().__init__(raw_json)
@@ -488,6 +535,15 @@ class Translate(Answer):
     ``TranslateText`` object.
     """
 
+    translations: 'TranslatedText'
+    """List of translated texts"""
+
+    input_tokens: int
+    """Number of tokens in prompt"""
+
+    output_tokens: int
+    """Number of tokens in response"""
+
     def __init__(self, raw_json):
         super().__init__(raw_json)
 
@@ -507,6 +563,12 @@ class TranslateText(Answer):
     Wrap a single translation from the ``translate`` endpoint.
     """
 
+    text: str
+    """Text translated into target language"""
+
+    detected_source_lang: str
+    """What source language was detected, if applicable"""
+
     def __init__(self, raw_json):
         super().__init__(raw_json)
 
@@ -521,6 +583,18 @@ class Logprob(Answer):
     """
     Wrap a response from the ``logprob`` endpoint.
     """
+
+    logprob: float
+    """Logarithm of the probability of this completion"""
+
+    num_tokens: int
+    """Number of tokens in completion"""
+
+    is_greedy: bool
+    """True if this completion could be reached by greedy sampling"""
+
+    input_tokens: int
+    """Total number of input tokens (context + continuation)"""
 
     def __init__(self, raw_json):
         super().__init__(raw_json)
@@ -540,9 +614,15 @@ class Tokenize(Answer):
 
     If provided, the base64-encoded token contents will be decoded. As the
     TextSynth documentation notes, some tokens to not correspond to a complete
-    and valid UTF-8 sequence, so they are decoded into ``bytes`` rather than
-    ``str``.
+    and valid UTF-8 sequence, so they are decoded into :py:func:`bytes` rather
+    than :py:func:`str`.
     """
+
+    tokens: List[int]
+    """List of tokens corresponding to input text"""
+
+    token_content: List[bytes]
+    """Byte content of tokens"""
 
     def __init__(self, raw_json):
         super().__init__(raw_json)
@@ -569,6 +649,9 @@ class TextToImage(Answer):
     can be saved directly to a ``.jpg`` file.
     """
 
+    images: List[bytes]
+    """List of decoded images"""
+
     def __init__(self, raw_json):
         super().__init__(raw_json)
 
@@ -586,6 +669,18 @@ class Transcript(Answer):
     Wrap a response from the ``transcript endpoint``. Each timestamped segment
     will be wrapped in a ``TranscriptSegment`` object.
     """
+
+    text: str
+    """Transcribed text"""
+
+    language: str
+    """Language of the transcribed text"""
+
+    duration: int
+    """Length of transcribed audio"""
+
+    segments: List['TranscriptSegment']
+    """List of segments"""
 
     def __init__(self, raw_json):
         super().__init__(raw_json)
@@ -610,6 +705,18 @@ class TranscriptSegment(Answer):
     """
     Wrap a timestamped segment from the ``transcript`` endpoint.
     """
+
+    text: str
+    """Text in this segment"""
+
+    id: int
+    """Segment id"""
+
+    start: int
+    """Starting timestamp"""
+
+    end: int
+    """Ending timestamp"""
 
     def __init__(self, raw_json):
         super().__init__(raw_json)

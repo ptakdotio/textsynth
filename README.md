@@ -39,6 +39,10 @@ tests that work with the free version of
 [`ts_server`](https://bellard.org/ts_server/), so that anyone can run them
 locally without incurring charges.
 
-If you notice any bugs, please report them at
+Once I have comprehensive unit and integration tests, and I have used this
+library in a major application myself, then I will release version 1.0 and
+declare it production-ready.
+
+If you notice any bugs or other problems, please report them at
 <https://github.com/ptakdotio/textsynth/issues>.
 
