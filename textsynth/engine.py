@@ -115,7 +115,7 @@ class Engine:
             'type': 'number',
             'minimum': 0,
             'maximum': 1
-        }
+        },
         # TODO figure out how to validate these
         'grammar': {
             'type': 'string'
