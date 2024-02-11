@@ -1,6 +1,6 @@
 [project]
 name    = "textsynth"
-version = "0.2"
+version = "0.2.1"
 authors = [
   { name="Christopher Ptak", email="christopher@ptak.io" },
 ]

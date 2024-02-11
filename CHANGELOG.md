@@ -14,3 +14,7 @@
   Currently these are not validated, except generally as a string or JSON
   object.
 
+## 0.2.1 -- 2024-02-10
+
+- Bugfixes
+
